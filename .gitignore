@@ -1,0 +1,20 @@
+# Gradle and build output (installs, jars, zips made by the build)
+build/
+.gradle/
+out/
+
+# IDE compiler output in the module folders.
+# The start scripts in <module>/src/dist/bin are source and stay tracked.
+/opentcs-6.2.0/opentcs-*/bin/
+/opentcs-commadapter-vda5050/bin/
+
+# JVM heap dumps and crash logs
+*.hprof
+hs_err_pid*.log
+replay_pid*.log
+
+# Build archives shared by hand
+*.zip
+
+# Local data of the VS Code Java upgrade tool
+/.github/java-upgrade/

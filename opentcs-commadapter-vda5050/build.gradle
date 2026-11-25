@@ -1,0 +1,111 @@
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    // License plugin
+    classpath 'gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.14.0'
+    // Stats plugin
+    classpath 'org.kordamp.gradle:stats-gradle-plugin:0.2.2'
+    // JaCoCo log plugin
+    classpath 'org.barfuin.gradle.jacocolog:gradle-jacoco-log:3.1.0'
+  }
+}
+
+plugins {
+  id 'maven-publish'
+  id 'signing'
+  id 'com.diffplug.spotless' version '6.25.0'
+  // id 'io.github.gradle-nexus.publish-plugin' version '2.0.0'
+  id 'application'
+
+}
+
+apply from: "${rootDir}/gradle/dependency-versions.gradle"
+apply from: "${rootDir}/gradle/common.gradle"
+apply from: "${rootDir}/gradle/java-project.gradle"
+apply from: "${rootDir}/gradle/java-codequality.gradle"
+apply from: "${rootDir}/gradle/guice-library.gradle"
+apply from: "${rootDir}/gradle/publishing-gitlab.gradle"
+apply from: "${rootDir}/gradle/publishing-ossrh.gradle"
+apply from: "${rootDir}/gradle/publishing-java.gradle"
+
+apply plugin: 'base'
+apply plugin: 'distribution'
+apply plugin: 'org.barfuin.gradle.jacocolog'
+
+dependencies {
+  implementation group: 'org.opentcs', name: 'opentcs-api-injection', version: openTcsBaselineVersion
+  implementation group: 'org.opentcs', name: 'opentcs-common', version: openTcsBaselineVersion
+
+  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.3'
+  implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.15.3'
+
+  implementation group: 'com.github.erosb', name: 'everit-json-schema', version: '1.14.3'
+
+  implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.5'
+
+  runtimeOnly group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.36'
+
+  testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
+}
+
+application {
+  mainClass = 'org.opentcs.commadapter.vehicle.vda5050.v2_0.simulation.VehicleSimulator'
+}
+
+// Attributes for the AsciiDoc documentation to include code from source files
+ext.javaSrcDir = sourceSets.main.java.srcDirs[0]
+ext.collectableDistDir = new File(buildDir, 'install')
+
+distributions {
+  main {
+    contents.from(jar)
+    contents.from(sourcesJar)
+    contents.from(javadoc){
+      into('api')
+    }
+  }
+}
+
+distZip {
+  dependsOn javadoc
+  archiveClassifier = 'bin'
+}
+
+distTar {
+  enabled = false
+  dependsOn javadoc
+  archiveClassifier = 'bin'
+}
+
+build {
+  dependsOn installDist
+}
+
+task distSrcZip(type: Zip) {
+  archiveClassifier = 'src'
+  from "${rootDir}"
+
+  includes << 'config/**'
+  includes << 'gradle/**'
+  includes << 'src/**'
+  includes << '.nb-gradle-properties'
+  includes << '*.gradle'
+  includes << 'gradlew'
+  includes << 'gradlew.bat'
+
+  excludes << '.gitlab'
+  excludes << '.gradle'
+  excludes << 'build'
+}
+
+artifacts {
+  archives distZip
+  archives distSrcZip
+  archives sourcesJar
+}
