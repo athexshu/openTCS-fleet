@@ -1,0 +1,2 @@
+# Order database extension: writes every transport order change to PostgreSQL.
+org.opentcs.kernel.extensions.orderdatabase.OrderDatabaseModule

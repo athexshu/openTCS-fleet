@@ -1,0 +1,19 @@
+// Kernel extension that writes every transport order change to a PostgreSQL database.
+
+apply from: "${rootDir}/gradle/java-project.gradle"
+apply from: "${rootDir}/gradle/java-codequality.gradle"
+apply from: "${rootDir}/gradle/guice-project.gradle"
+
+dependencies {
+  api project(':opentcs-api-injection')
+  api project(':opentcs-common')
+
+  // Already part of the kernel's lib folder through the web API extension.
+  implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.18.0'
+
+  runtimeOnly group: 'org.postgresql', name: 'postgresql', version: '42.7.4'
+}
+
+task release {
+  dependsOn build
+}
